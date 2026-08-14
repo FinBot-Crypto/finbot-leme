@@ -19,3 +19,8 @@ O `.env` é exclusivo do Leme. Ele não deve conter as chaves privadas usadas pe
 docker compose --env-file .env up -d --build
 ```
 
+Os serviços de ML offline ficam no profile `offline` e não interrompem o runtime da estratégia:
+
+```bash
+docker compose --env-file .env --profile offline up -d --build fb-ml-training fb-ml-validation
+```

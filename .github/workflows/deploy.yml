@@ -25,4 +25,4 @@ jobs:
           done
           docker compose --env-file .env up -d --build
       - name: Health check
-        run: docker ps --filter name=fb-leme --filter name=fb-ml --format '{{.Names}} {{.Status}}'
+        run: docker ps --filter name=fb-leme --format '{{.Names}} {{.Status}}'

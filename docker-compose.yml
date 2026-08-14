@@ -48,6 +48,7 @@ services:
     networks: [crypto-network]
 
   fb-ml-training:
+    profiles: [offline]
     build:
       context: .
       dockerfile: services/fb-ml-training/Dockerfile
@@ -58,6 +59,7 @@ services:
     networks: [crypto-network]
 
   fb-ml-validation:
+    profiles: [offline]
     build:
       context: .
       dockerfile: services/fb-ml-validation/Dockerfile
@@ -74,4 +76,3 @@ networks:
 volumes:
   crypto_ml_models:
     external: true
-
