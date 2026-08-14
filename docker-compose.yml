@@ -26,7 +26,12 @@ services:
         LEME_ENGINE_BASE_IMAGE: ${LEME_ENGINE_BASE_IMAGE:-python:3.12-slim}
     container_name: fb-leme-engine
     restart: unless-stopped
-    environment: *common-env
+    environment:
+      <<: *common-env
+      LEME_LIVE_ORDERS_ENABLED: ${LEME_LIVE_ORDERS_ENABLED:-false}
+      LEME_MAX_ORDER_NOTIONAL_USDT: ${LEME_MAX_ORDER_NOTIONAL_USDT:-25}
+      LEME_PAPER_SPOT_BALANCE: ${LEME_PAPER_SPOT_BALANCE:-10000}
+      LEME_PAPER_FUTURES_BALANCE: ${LEME_PAPER_FUTURES_BALANCE:-10000}
     volumes: ["crypto_ml_models:/app/models"]
     networks: [crypto-network]
 
