@@ -1,0 +1,77 @@
+x-common-env: &common-env
+  TZ: ${TZ:-America/Sao_Paulo}
+  NATS_URL: ${NATS_URL:-nats://crypto-nats:4222}
+  DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@crypto-postgres:5432/${DB_NAME}
+  BINANCE_API_KEY: ${BINANCE_API_KEY}
+  BINANCE_API_SECRET: ${BINANCE_API_SECRET}
+  DRY_RUN: ${DRY_RUN:-true}
+
+services:
+  fb-leme-scan:
+    build:
+      context: .
+      dockerfile: services/fb-leme-scan/Dockerfile
+    container_name: fb-leme-scan
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+      UPDATE_INTERVAL: ${UPDATE_INTERVAL:-900}
+    networks: [crypto-network]
+
+  fb-leme-engine:
+    build:
+      context: .
+      dockerfile: services/fb-leme-engine/Dockerfile
+    container_name: fb-leme-engine
+    restart: unless-stopped
+    environment: *common-env
+    volumes: ["crypto_ml_models:/app/models"]
+    networks: [crypto-network]
+
+  fb-leme-guardian:
+    build:
+      context: .
+      dockerfile: services/fb-leme-guardian/Dockerfile
+    container_name: fb-leme-guardian
+    restart: unless-stopped
+    environment: *common-env
+    networks: [crypto-network]
+
+  fb-leme-shadow:
+    build:
+      context: .
+      dockerfile: services/fb-leme-shadow/Dockerfile
+    container_name: fb-leme-shadow
+    restart: unless-stopped
+    environment: *common-env
+    volumes: ["crypto_ml_models:/app/models"]
+    networks: [crypto-network]
+
+  fb-ml-training:
+    build:
+      context: .
+      dockerfile: services/fb-ml-training/Dockerfile
+    container_name: fb-ml-training
+    restart: unless-stopped
+    environment: *common-env
+    volumes: ["crypto_ml_models:/app/models"]
+    networks: [crypto-network]
+
+  fb-ml-validation:
+    build:
+      context: .
+      dockerfile: services/fb-ml-validation/Dockerfile
+    container_name: fb-ml-validation
+    restart: unless-stopped
+    environment: *common-env
+    volumes: ["crypto_ml_models:/app/models"]
+    networks: [crypto-network]
+
+networks:
+  crypto-network:
+    external: true
+
+volumes:
+  crypto_ml_models:
+    external: true
+

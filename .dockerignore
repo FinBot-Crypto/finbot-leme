@@ -1,0 +1,10 @@
+.git
+.venv
+__pycache__
+*.pyc
+node_modules
+services/fb-ml-training/data
+services/fb-ml-training/models
+scratch
+.env
+

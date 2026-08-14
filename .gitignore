@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+scratch/
+services/fb-ml-training/data/
+services/fb-ml-training/models/
+
