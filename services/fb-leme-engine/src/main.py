@@ -61,6 +61,7 @@ BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 _api_key = BINANCE_API_KEY if BINANCE_API_KEY not in _PLACEHOLDER_KEYS else None
 _api_secret = BINANCE_API_SECRET if BINANCE_API_SECRET not in _PLACEHOLDER_KEYS else None
 LEME_LIVE_ORDERS_ENABLED = os.getenv("LEME_LIVE_ORDERS_ENABLED", "false").lower() in {"1", "true", "yes", "on"}
+LEME_MAX_ORDER_NOTIONAL_USDT = float(os.getenv("LEME_MAX_ORDER_NOTIONAL_USDT", "25"))
 PAPER_SPOT_BALANCE = float(os.getenv("LEME_PAPER_SPOT_BALANCE", "10000"))
 PAPER_FUTURES_BALANCE = float(os.getenv("LEME_PAPER_FUTURES_BALANCE", "10000"))
 
@@ -563,6 +564,18 @@ class LemeEngine:
             pass
 
         final_notional = quantity * current_price
+        if LEME_LIVE_ORDERS_ENABLED and final_notional > LEME_MAX_ORDER_NOTIONAL_USDT:
+            capped_quantity = LEME_MAX_ORDER_NOTIONAL_USDT / current_price if current_price > 0 else 0
+            try:
+                quantity = float(exchange.amount_to_precision(symbol, capped_quantity))
+            except Exception:
+                quantity = capped_quantity
+            final_notional = quantity * current_price
+            logger.info(
+                "  Teto live aplicado: notional reduzido para %.2f USDT (%s)",
+                final_notional,
+                symbol,
+            )
         if final_notional < min_notional:
             logger.info(
                 "  %s %s: notional $%.2f < mínimo $%.2f",
