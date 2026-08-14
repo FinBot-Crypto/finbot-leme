@@ -60,6 +60,9 @@ BINANCE_API_KEY = os.getenv("BINANCE_API_KEY", "")
 BINANCE_API_SECRET = os.getenv("BINANCE_API_SECRET", "")
 _api_key = BINANCE_API_KEY if BINANCE_API_KEY not in _PLACEHOLDER_KEYS else None
 _api_secret = BINANCE_API_SECRET if BINANCE_API_SECRET not in _PLACEHOLDER_KEYS else None
+LEME_LIVE_ORDERS_ENABLED = os.getenv("LEME_LIVE_ORDERS_ENABLED", "false").lower() in {"1", "true", "yes", "on"}
+PAPER_SPOT_BALANCE = float(os.getenv("LEME_PAPER_SPOT_BALANCE", "10000"))
+PAPER_FUTURES_BALANCE = float(os.getenv("LEME_PAPER_FUTURES_BALANCE", "10000"))
 
 
 def tier_slug(tier: str) -> str:
@@ -377,6 +380,8 @@ class LemeEngine:
             return 0
 
     async def get_spot_usdt_balance(self) -> float:
+        if not _api_key or not _api_secret:
+            return PAPER_SPOT_BALANCE
         try:
             balance = await asyncio.to_thread(self.spot_exchange.fetch_balance)
             return float(balance["USDT"]["free"])
@@ -385,6 +390,8 @@ class LemeEngine:
             return 0.0
 
     async def get_futures_usdt_balance(self) -> tuple[float, float]:
+        if not _api_key or not _api_secret:
+            return PAPER_FUTURES_BALANCE, PAPER_FUTURES_BALANCE
         try:
             balance = await asyncio.to_thread(self.futures_exchange.fetch_balance)
             usdt = balance.get("USDT", {})
@@ -394,6 +401,8 @@ class LemeEngine:
             return 0.0, 0.0
 
     async def get_total_spot_portfolio(self) -> float:
+        if not _api_key or not _api_secret:
+            return PAPER_SPOT_BALANCE
         try:
             balance = await asyncio.to_thread(self.spot_exchange.fetch_balance)
             total = float(balance.get("USDT", {}).get("total", 0.0))
@@ -759,8 +768,11 @@ class LemeEngine:
                         continue
 
                     payload = json.dumps(order).encode()
-                    await self.js.publish("trade.order.v1", payload)
-                    orders_published += 1
+                    if LEME_LIVE_ORDERS_ENABLED:
+                        await self.js.publish("trade.order.v1", payload)
+                        orders_published += 1
+                    else:
+                        logger.info("Shadow order candidate %s %s score=%.4f", direction, symbol, score)
                     self.log_evaluation(
                         symbol, tier, strategy, direction, score, rsi_smooth,
                         regime, "ACCEPTED",
