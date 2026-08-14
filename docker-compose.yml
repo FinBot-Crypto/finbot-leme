@@ -22,6 +22,8 @@ services:
     build:
       context: .
       dockerfile: services/fb-leme-engine/Dockerfile
+      args:
+        LEME_ENGINE_BASE_IMAGE: ${LEME_ENGINE_BASE_IMAGE:-python:3.12-slim}
     container_name: fb-leme-engine
     restart: unless-stopped
     environment: *common-env
@@ -41,6 +43,8 @@ services:
     build:
       context: .
       dockerfile: services/fb-leme-shadow/Dockerfile
+      args:
+        LEME_SHADOW_BASE_IMAGE: ${LEME_SHADOW_BASE_IMAGE:-python:3.12-slim}
     container_name: fb-leme-shadow
     restart: unless-stopped
     environment: *common-env
